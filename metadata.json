@@ -1,0 +1,5 @@
+{
+  "name": "Cloudflare-Ready React App",
+  "description": "A modular React application with a Discord webhook form handler, designed for easy adaptation to Cloudflare Pages.",
+  "requestFramePermissions": []
+}
