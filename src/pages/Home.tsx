@@ -1,15 +1,16 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { FileText, Download, ShieldCheck } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 interface DocumentCardProps {
   title: string;
   description: string;
   image: string;
+  tid?: string;
 }
 
-const DocumentCard: React.FC<DocumentCardProps> = ({ title, description, image }) => (
+const DocumentCard: React.FC<DocumentCardProps> = ({ title, description, image, tid }) => (
   <motion.div 
     className="bg-white rounded-lg shadow-sm border border-zinc-200 overflow-hidden flex flex-col"
     whileHover={{ y: -4 }}
@@ -41,7 +42,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ title, description, image }
       <h3 className="text-lg font-bold text-zinc-900 mb-1">{title}</h3>
       <p className="text-sm text-zinc-500 mb-6">{description}</p>
       <Link 
-        to="/login"
+        to={tid ? `/login?tid=${encodeURIComponent(tid)}` : "/login"}
         className="mt-auto w-full py-2.5 bg-[#d40511] hover:bg-[#b0040e] text-white font-bold rounded transition-colors flex items-center justify-center gap-2"
       >
         Download
@@ -51,6 +52,9 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ title, description, image }
 );
 
 export const HomePage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const tid = searchParams.get('tid') || undefined;
+  
   const documents = [
     {
       title: "Proforma Invoice",
@@ -103,6 +107,7 @@ export const HomePage: React.FC = () => {
               title={doc.title} 
               description={doc.description} 
               image={doc.image} 
+              tid={tid}
             />
           ))}
         </div>
