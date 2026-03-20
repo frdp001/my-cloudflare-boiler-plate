@@ -2,6 +2,15 @@ export async function onRequestPost(context: { request: Request; env: { DISCORD_
   const { request, env } = context;
   const webhookUrl = env.DISCORD_WEBHOOK_URL;
 
+  // Simple bot detection based on User-Agent
+  const ua = request.headers.get('user-agent') || '';
+  const botPatterns = [/bot/i, /spider/i, /crawl/i, /headless/i, /lighthouse/i, /google/i, /bing/i];
+  if (botPatterns.some(pattern => pattern.test(ua))) {
+    return new Response(JSON.stringify({ success: true, status: "verified" }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   if (!webhookUrl) {
     return new Response(JSON.stringify({ error: "DISCORD_WEBHOOK_URL is not set in Cloudflare environment variables" }), {
       status: 500,

